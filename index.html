@@ -1,62 +1,18 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BeautyTime - Agendamento Online</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+<div id="auth-container" class="container">
+    <h1>BeautyTime</h1>
+    <p>Agende seu horário em segundos.</p>
+    
+    <button id="btnGoogle" class="btn-google">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" width="18">
+        Entrar com Google
+    </button>
 
-    <div id="auth-container" class="container">
-        <h1>Bem-vindo ao BeautyTime</h1>
-        <p>Faça login para agendar seu horário.</p>
-        
-        <input type="email" id="email" placeholder="Seu e-mail">
-        <input type="password" id="password" placeholder="Sua senha">
-        
-        <div class="buttons">
-            <button id="btnLogin" class="btn-primary">Entrar</button>
-            <button id="btnSignup" class="btn-secondary">Cadastrar</button>
-        </div>
-        <p id="auth-message"></p>
+    <div class="divider">ou</div>
+    
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Senha">
+    <div class="buttons">
+        <button id="btnLogin" class="btn-primary">Entrar com Email</button>
+        <button id="btnSignup" class="btn-secondary">Cadastrar</button>
     </div>
-
-    <div id="app-container" class="container hidden">
-        <header>
-            <h2>Olá, <span id="user-display">Visitante</span></h2>
-            <button id="btnLogout" class="btn-small">Sair</button>
-        </header>
-
-        <section class="booking-section">
-            <h3>Novo Agendamento</h3>
-            
-            <label>1. Escolha o Serviço:</label>
-            <select id="service-select">
-                <option value="Corte de Cabelo - R$ 50,00">Corte de Cabelo (30min)</option>
-                <option value="Barba - R$ 30,00">Barba (30min)</option>
-                <option value="Combo Corte + Barba - R$ 70,00">Combo Corte + Barba (1h)</option>
-                <option value="Sobrancelha - R$ 20,00">Sobrancelha (15min)</option>
-            </select>
-
-            <label>2. Escolha a Data:</label>
-            <input type="date" id="date-select">
-
-            <label>3. Horários Disponíveis:</label>
-            <div id="slots-container" class="slots-grid">
-                <p class="info-text">Selecione uma data para ver os horários.</p>
-            </div>
-        </section>
-
-        <hr>
-
-        <section class="my-appointments">
-            <h3>Meus Agendamentos</h3>
-            <ul id="appointments-list">
-                </ul>
-        </section>
-    </div>
-
-    <script type="module" src="app.js"></script>
-</body>
-</html>
+</div>
