@@ -1,9 +1,25 @@
-// Importações do Firebase v9 (Direto do CDN para não precisar de instalações locais complexas)
+// --- IMPORTAÇÕES DO FIREBASE (Versão 9 Modular) ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, where, onSnapshot, deleteDoc, doc, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { 
+    getAuth, 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, 
+    onAuthStateChanged, 
+    signOut, 
+    GoogleAuthProvider, 
+    signInWithPopup 
+} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    query, 
+    where, 
+    onSnapshot, 
+    getDocs 
+} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-// --- 1. CONFIGURAÇÃO ---
+// --- 1. CONFIGURAÇÃO (SUAS CHAVES) ---
 const firebaseConfig = {
     apiKey: "AIzaSyCvS2rnWz2qqyet_eqwTNQ6hSdlyxgoHjY",
     authDomain: "beautytime-1f1a9.firebaseapp.com",
@@ -14,52 +30,70 @@ const firebaseConfig = {
     measurementId: "G-2MMEH73BLL"
 };
 
+// Inicializa o Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const googleProvider = new GoogleAuthProvider();
 
-// Variáveis Globais
+// Variáveis de Estado
 let currentUser = null;
 let selectedTime = null;
 
-// Elementos do DOM
-const authContainer = document.getElementById('auth-container');
-const appContainer = document.getElementById('app-container');
-const emailInput = document.getElementById('email');
-const passInput = document.getElementById('password');
-const dateInput = document.getElementById('date-select');
-const slotsContainer = document.getElementById('slots-container');
-const serviceSelect = document.getElementById('service-select');
-const appointmentsList = document.getElementById('appointments-list');
+// Elementos da Tela
+const views = {
+    auth: document.getElementById('auth-container'),
+    app: document.getElementById('app-container')
+};
 
-// --- 2. AUTENTICAÇÃO ---
+const inputs = {
+    email: document.getElementById('email'),
+    pass: document.getElementById('password'),
+    date: document.getElementById('date-select'),
+    service: document.getElementById('service-select')
+};
 
-// Observador de Estado (Logado ou Não)
+// --- 2. SISTEMA DE LOGIN ---
+
+// Monitora se o usuário entrou ou saiu
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
-        authContainer.classList.add('hidden');
-        appContainer.classList.remove('hidden');
-        document.getElementById('user-display').innerText = user.email;
+        views.auth.classList.add('hidden');
+        views.app.classList.remove('hidden');
+        
+        // Se tiver nome (Google) usa ele, senão usa o email
+        const displayName = user.displayName || user.email.split('@')[0];
+        document.getElementById('user-display').innerText = displayName;
+        
         carregarMeusAgendamentos();
     } else {
         currentUser = null;
-        authContainer.classList.remove('hidden');
-        appContainer.classList.add('hidden');
+        views.auth.classList.remove('hidden');
+        views.app.classList.add('hidden');
     }
 });
 
-// Botão Cadastrar
-document.getElementById('btnSignup').addEventListener('click', () => {
-    createUserWithEmailAndPassword(auth, emailInput.value, passInput.value)
-        .then(() => alert("Conta criada!"))
-        .catch((error) => alert("Erro: " + error.message));
+// Botão Login com Google
+document.getElementById('btnGoogle').addEventListener('click', async () => {
+    try {
+        await signInWithPopup(auth, googleProvider);
+    } catch (error) {
+        alert("Erro no Google: " + error.message);
+    }
 });
 
-// Botão Entrar
+// Botão Cadastrar (Email/Senha)
+document.getElementById('btnSignup').addEventListener('click', () => {
+    createUserWithEmailAndPassword(auth, inputs.email.value, inputs.pass.value)
+        .then(() => alert("Conta criada!"))
+        .catch(err => alert("Erro: " + err.message));
+});
+
+// Botão Entrar (Email/Senha)
 document.getElementById('btnLogin').addEventListener('click', () => {
-    signInWithEmailAndPassword(auth, emailInput.value, passInput.value)
-        .catch((error) => alert("Erro ao entrar: " + error.message));
+    signInWithEmailAndPassword(auth, inputs.email.value, inputs.pass.value)
+        .catch(err => alert("Erro: " + err.message));
 });
 
 // Botão Sair
@@ -68,108 +102,114 @@ document.getElementById('btnLogout').addEventListener('click', () => signOut(aut
 
 // --- 3. LÓGICA DE AGENDAMENTO ---
 
-// Quando muda a data, carrega horários
-dateInput.addEventListener('change', carregarHorarios);
+// Quando muda a data, busca horários no banco
+inputs.date.addEventListener('change', carregarHorarios);
 
 async function carregarHorarios() {
-    const dataSelecionada = dateInput.value;
-    if (!dataSelecionada) return;
-
-    slotsContainer.innerHTML = '<p>Carregando...</p>';
-
-    // Horários possíveis (Exemplo: 9h às 18h)
-    const horariosBase = ["09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"];
-
-    // Buscar no Firebase quais já estão ocupados nesta data
-    const q = query(collection(db, "agendamentos"), where("data", "==", dataSelecionada));
-    const snapshot = await getDocs(q);
+    const dataEscolhida = inputs.date.value;
+    const container = document.getElementById('slots-container');
     
-    const horariosOcupados = snapshot.docs.map(doc => doc.data().horario);
+    if (!dataEscolhida) return;
 
-    slotsContainer.innerHTML = ''; // Limpa
+    container.innerHTML = '<p class="hint">Verificando agenda...</p>';
 
-    horariosBase.forEach(hora => {
+    // Lista de horários fixos do salão
+    const horariosDisponiveis = ["09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"];
+
+    // Busca no Firestore o que já está ocupado nessa data
+    const q = query(collection(db, "agendamentos"), where("data", "==", dataEscolhida));
+    const snapshot = await getDocs(q);
+    const ocupados = snapshot.docs.map(doc => doc.data().horario);
+
+    // Renderiza os botões
+    container.innerHTML = '';
+    horariosDisponiveis.forEach(hora => {
         const div = document.createElement('div');
         div.className = 'slot';
         div.innerText = hora;
 
-        if (horariosOcupados.includes(hora)) {
-            div.classList.add('taken');
-            div.title = "Indisponível";
+        if (ocupados.includes(hora)) {
+            div.classList.add('taken'); // Estilo vermelho/bloqueado
+            div.title = "Horário Ocupado";
         } else {
             div.onclick = () => selecionarHorario(div, hora);
         }
-        slotsContainer.appendChild(div);
+        container.appendChild(div);
     });
 }
 
-function selecionarHorario(elemento, hora) {
-    // Remove seleção anterior
-    document.querySelectorAll('.slot.selected').forEach(el => el.classList.remove('selected'));
+function selecionarHorario(el, hora) {
+    // Limpa seleção anterior
+    document.querySelectorAll('.slot.selected').forEach(e => e.classList.remove('selected'));
     
-    // Adiciona nova seleção
-    elemento.classList.add('selected');
+    // Marca o novo
+    el.classList.add('selected');
     selectedTime = hora;
-    
-    // Pergunta se quer confirmar
-    if(confirm(`Confirmar agendamento para ${dateInput.value} às ${hora}?`)) {
-        salvarAgendamento();
-    }
+
+    // Confirmação simples
+    setTimeout(() => {
+        if(confirm(`Confirmar agendamento para ${inputs.date.value} às ${hora}?`)) {
+            salvarAgendamento();
+        }
+    }, 100);
 }
 
 async function salvarAgendamento() {
-    if (!currentUser || !selectedTime || !dateInput.value) return;
+    if (!currentUser || !selectedTime) return;
+
+    // Define o nome do cliente (Necessário para suas regras de segurança)
+    // Se for Google, pega o displayName. Se for Email, pega o email.
+    const nomeCliente = currentUser.displayName || currentUser.email;
+
+    const novoAgendamento = {
+        cliente: nomeCliente, // Campo OBRIGATÓRIO nas suas regras
+        data: inputs.date.value,
+        horario: selectedTime,
+        servico: inputs.service.value,
+        uid: currentUser.uid, // Útil para filtrar "meus agendamentos"
+        criado_em: new Date().toISOString()
+    };
 
     try {
-        await addDoc(collection(db, "agendamentos"), {
-            uid: currentUser.uid,
-            email: currentUser.email,
-            servico: serviceSelect.value,
-            data: dateInput.value,
-            horario: selectedTime,
-            criado_em: new Date()
-        });
-        alert("Agendamento Confirmado!");
+        await addDoc(collection(db, "agendamentos"), novoAgendamento);
+        alert("Agendamento realizado com sucesso!");
         selectedTime = null;
-        carregarHorarios(); // Recarrega para bloquear o horário
-    } catch (e) {
-        console.error("Erro", e);
-        alert("Erro ao salvar.");
+        carregarHorarios(); // Atualiza a grade
+    } catch (error) {
+        console.error(error);
+        alert("Erro ao salvar: Verifique se todos os campos estão preenchidos.");
     }
 }
 
-// --- 4. LISTAGEM EM TEMPO REAL ---
+// --- 4. MEUS AGENDAMENTOS (TEMPO REAL) ---
 
 function carregarMeusAgendamentos() {
-    const q = query(collection(db, "agendamentos"), where("uid", "==", currentUser.uid));
+    const lista = document.getElementById('appointments-list');
     
-    // onSnapshot atualiza a lista automaticamente se algo mudar no banco
+    // Busca agendamentos onde o UID é igual ao do usuário logado
+    const q = query(collection(db, "agendamentos"), where("uid", "==", currentUser.uid));
+
     onSnapshot(q, (snapshot) => {
-        appointmentsList.innerHTML = '';
+        lista.innerHTML = '';
         if (snapshot.empty) {
-            appointmentsList.innerHTML = '<li>Nenhum agendamento encontrado.</li>';
+            lista.innerHTML = '<li style="justify-content:center; color:#777;">Você não tem agendamentos.</li>';
+            return;
         }
-        
-        snapshot.forEach((docSnap) => {
-            const agendamento = docSnap.data();
+
+        snapshot.forEach(doc => {
+            const dados = doc.data();
+            // Formata a data para padrão BR (dd/mm/aaaa)
+            const dataFormatada = dados.data.split('-').reverse().join('/');
+            
             const li = document.createElement('li');
             li.innerHTML = `
                 <div>
-                    <strong>${agendamento.data} - ${agendamento.horario}</strong><br>
-                    <small>${agendamento.servico}</small>
+                    <strong>${dataFormatada} às ${dados.horario}</strong>
+                    <div style="font-size:13px; color:#555">${dados.servico}</div>
                 </div>
-                <button class="btn-delete" data-id="${docSnap.id}">X</button>
+                <span style="font-size:12px; color:green;">Confirmado</span>
             `;
-            
-            // Botão de Excluir
-            li.querySelector('.btn-delete').onclick = async () => {
-                if(confirm("Cancelar este agendamento?")) {
-                    await deleteDoc(doc(db, "agendamentos", docSnap.id));
-                    carregarHorarios(); // Atualiza a grade se for no mesmo dia
-                }
-            };
-
-            appointmentsList.appendChild(li);
+            lista.appendChild(li);
         });
     });
 }
