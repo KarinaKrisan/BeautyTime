@@ -1,10 +1,8 @@
 :root {
-    --primary: #d63384; /* Rosa escuro */
-    --primary-hover: #b02a6b;
+    --primary: #d63384; 
     --bg-color: #f0f2f5;
     --card-bg: #ffffff;
-    --text-color: #333;
-    --border-color: #ddd;
+    --text: #333;
 }
 
 body {
@@ -13,125 +11,122 @@ body {
     margin: 0;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
-    padding-top: 20px;
+    padding-top: 40px;
+    color: var(--text);
 }
 
 .container {
     background: var(--card-bg);
     width: 90%;
     max-width: 400px;
-    padding: 25px;
+    padding: 30px;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.center-content {
+    text-align: center;
+    padding-bottom: 50px;
+    padding-top: 50px;
 }
 
 .hidden { display: none !important; }
 
-/* Cabeçalho */
-.header { text-align: center; margin-bottom: 20px; }
-.header h1 { margin: 0; color: var(--primary); }
-.header p { color: #666; margin: 5px 0 0; }
+/* Header Login */
+.header h1 { margin: 0; color: var(--primary); font-size: 28px; }
+.header p { color: #666; margin: 10px 0 30px; }
 
-/* Inputs e Botões */
-input, select {
-    width: 100%;
-    padding: 12px;
-    margin: 8px 0;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    box-sizing: border-box;
-    font-size: 16px;
-}
-
-button {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 500;
-    transition: 0.2s;
-}
-
-.buttons-row { display: flex; gap: 10px; margin-top: 10px; }
-
-.btn-primary { background-color: var(--primary); color: white; }
-.btn-primary:hover { background-color: var(--primary-hover); }
-
-.btn-outline { background-color: transparent; border: 1px solid var(--primary); color: var(--primary); }
-.btn-outline:hover { background-color: #fff0f5; }
-
-/* Botão Google */
+/* Botão Google Otimizado */
 .btn-google {
     background-color: white;
-    color: #555;
-    border: 1px solid #ccc;
-    display: flex;
+    color: #3c4043;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    margin-bottom: 15px;
+    gap: 12px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color .2s;
 }
-.btn-google img { width: 18px; height: 18px; }
-.btn-google:hover { background-color: #f8f8f8; border-color: #bbb; }
+.btn-google:hover { background-color: #f7f8f8; border-color: #d2e3fc; }
+.btn-google img { width: 20px; height: 20px; }
 
-.divider {
-    text-align: center;
-    color: #999;
-    font-size: 12px;
-    margin: 15px 0;
-    position: relative;
-}
-
-/* Área do App */
+/* Header App Logado */
 .app-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
+    padding-bottom: 15px;
 }
-.btn-small { width: auto; padding: 5px 15px; font-size: 14px; background: #eee; color: #333; }
 
-.step { margin-bottom: 15px; }
-.step label { font-weight: bold; display: block; margin-bottom: 5px; color: #444; }
+.user-info { display: flex; align-items: center; gap: 10px; }
+#user-photo { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+#user-display { margin: 0; font-size: 16px; }
+
+.btn-small {
+    background: transparent;
+    border: 1px solid #ddd;
+    padding: 5px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+}
+.btn-small:hover { background: #eee; }
+
+/* Formulário */
+.step { margin-bottom: 20px; }
+.step label { font-weight: 500; display: block; margin-bottom: 8px; }
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 16px;
+    background: #fff;
+}
 
 /* Grid de Horários */
 .slots-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
+    gap: 10px;
 }
 
 .slot {
-    padding: 10px;
+    padding: 12px;
     background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
     text-align: center;
     cursor: pointer;
     font-size: 14px;
+    transition: 0.2s;
 }
-.slot:hover { background-color: #e9ecef; }
-.slot.selected { background-color: var(--primary); color: white; border-color: var(--primary); }
-.slot.taken { background-color: #ffebee; color: #c62828; cursor: not-allowed; opacity: 0.7; }
+.slot:hover { border-color: var(--primary); color: var(--primary); }
+.slot.selected { background-color: var(--primary); color: white; border-color: var(--primary); font-weight: bold; }
+.slot.taken { background-color: #ffebee; color: #b71c1c; border-color: #ffcdd2; cursor: not-allowed; opacity: 0.6; }
 
-.hint { grid-column: span 3; text-align: center; color: #888; font-size: 14px; }
+.hint { grid-column: span 3; text-align: center; color: #888; font-style: italic; }
 
-/* Lista de Agendamentos */
+/* Lista Meus Agendamentos */
 ul { list-style: none; padding: 0; }
 li {
     background: #fff;
-    border: 1px solid #eee;
-    padding: 10px;
-    margin-bottom: 8px;
-    border-radius: 6px;
+    border-left: 4px solid var(--primary);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 4px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-.btn-cancel { width: auto; background: none; color: #d63384; font-size: 12px; padding: 5px; }
