@@ -3,201 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Espaço BeautyTime - Agendamento</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    
-    <style>
-        /* Estilo inspirado no SalonSoft */
-        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        
-        .header-cover {
-            height: 150px;
-            background: linear-gradient(to right, #d63384, #e66465); /* Cor Rosa/Degrade */
-            border-bottom-left-radius: 20px;
-            border-bottom-right-radius: 20px;
-            position: relative;
-        }
-
-        .profile-section {
-            margin-top: -60px;
-            text-align: center;
-        }
-
-        .profile-img {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            border: 4px solid white;
-            object-fit: cover;
-            background-color: #fff;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .salon-info { margin-top: 10px; margin-bottom: 20px; }
-        .salon-info h1 { font-size: 1.5rem; font-weight: bold; color: #333; }
-        .salon-info p { color: #666; font-size: 0.9rem; }
-
-        /* Card de Serviço */
-        .service-card {
-            background: white;
-            border: none;
-            border-radius: 15px;
-            margin-bottom: 15px;
-            transition: transform 0.2s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            overflow: hidden;
-        }
-        
-        .service-card:active { transform: scale(0.98); }
-
-        .service-body { padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .service-info h5 { font-size: 1rem; margin-bottom: 5px; font-weight: 600; }
-        .service-info .price { color: #d63384; font-weight: bold; }
-        .service-info .duration { font-size: 0.8rem; color: #999; }
-
-        .btn-agendar {
-            background-color: #d63384;
-            color: white;
-            border-radius: 20px;
-            padding: 5px 20px;
-            font-size: 0.9rem;
-            border: none;
-        }
-        .btn-agendar:hover { background-color: #b02a6b; color: white; }
-
-        /* Botão Flutuante do WhatsApp (Opcional) */
-        .fab-whatsapp {
-            position: fixed; bottom: 20px; right: 20px;
-            background-color: #25d366; color: white;
-            width: 60px; height: 60px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            text-decoration: none; z-index: 1000;
-        }
-    </style>
+    <title>BeautyTime - Agendamento Online</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="header-cover"></div>
-
-    <div class="container pb-5">
-        <div class="profile-section">
-            <img src="https://cdn-icons-png.flaticon.com/512/3899/3899618.png" alt="Logo" class="profile-img">
-            <div class="salon-info">
-                <h1>Espaço BeautyTime</h1>
-                <p><i class="bi bi-geo-alt-fill text-danger"></i> Av. Principal, 123 - Centro</p>
-                <span class="badge bg-success">Aberto agora</span>
-            </div>
-        </div>
-
-        <h5 class="mb-3 text-muted ps-2">Selecione um serviço</h5>
-
-        <div id="services-list">
-            <div class="service-card" onclick="openBookingModal('Corte Feminino', 'R$ 80,00')">
-                <div class="service-body">
-                    <div class="service-info">
-                        <h5>Corte Feminino</h5>
-                        <div class="duration"><i class="bi bi-clock"></i> 60 min</div>
-                        <div class="price">R$ 80,00</div>
-                    </div>
-                    <button class="btn btn-agendar">Agendar</button>
-                </div>
-            </div>
-
-            <div class="service-card" onclick="openBookingModal('Manicure Completa', 'R$ 45,00')">
-                <div class="service-body">
-                    <div class="service-info">
-                        <h5>Manicure Completa</h5>
-                        <div class="duration"><i class="bi bi-clock"></i> 45 min</div>
-                        <div class="price">R$ 45,00</div>
-                    </div>
-                    <button class="btn btn-agendar">Agendar</button>
-                </div>
-            </div>
-
-            <div class="service-card" onclick="openBookingModal('Hidratação Capilar', 'R$ 120,00')">
-                <div class="service-body">
-                    <div class="service-info">
-                        <h5>Hidratação Capilar</h5>
-                        <div class="duration"><i class="bi bi-clock"></i> 90 min</div>
-                        <div class="price">R$ 120,00</div>
-                    </div>
-                    <button class="btn btn-agendar">Agendar</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="message" class="mt-4"></div>
-    </div>
-
-    <div class="modal fade" id="bookingModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Finalizar Agendamento</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="bookingForm">
-                        <input type="hidden" id="serviceInput">
-                        <input type="hidden" id="priceInput">
-                        
-                        <div class="alert alert-light border text-center">
-                            Você está agendando: <br>
-                            <strong id="serviceNameDisplay" class="text-pink">...</strong>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Seu Nome</label>
-                            <input type="text" class="form-control" id="name" required placeholder="Ex: Maria Silva">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Data</label>
-                            <input type="date" class="form-control" id="date" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Horário</label>
-                            <select class="form-select" id="time" required>
-                                <option value="">Escolha um horário...</option>
-                                <option value="09:00">09:00</option>
-                                <option value="10:00">10:00</option>
-                                <option value="11:00">11:00</option>
-                                <option value="13:00">13:00</option>
-                                <option value="14:00">14:00</option>
-                                <option value="15:00">15:00</option>
-                                <option value="16:00">16:00</option>
-                                <option value="17:00">17:00</option>
-                            </select>
-                        </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary" style="background-color: #d63384; border:none;">Confirmar Agendamento</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <a href="https://wa.me/5511999999999" class="fab-whatsapp" target="_blank">
-        <i class="bi bi-whatsapp"></i>
-    </a>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script type="module" src="app.js"></script>
-    
-    <script>
-        const myModal = new bootstrap.Modal(document.getElementById('bookingModal'));
+    <div id="auth-container" class="container">
+        <h1>Bem-vindo ao BeautyTime</h1>
+        <p>Faça login para agendar seu horário.</p>
         
-        function openBookingModal(serviceName, servicePrice) {
-            document.getElementById('serviceNameDisplay').innerText = serviceName + ' - ' + servicePrice;
-            document.getElementById('serviceInput').value = serviceName;
-            document.getElementById('priceInput').value = servicePrice;
-            myModal.show();
-        }
-        // Disponibiliza a função globalmente para o HTML usar
-        window.openBookingModal = openBookingModal;
-    </script>
+        <input type="email" id="email" placeholder="Seu e-mail">
+        <input type="password" id="password" placeholder="Sua senha">
+        
+        <div class="buttons">
+            <button id="btnLogin" class="btn-primary">Entrar</button>
+            <button id="btnSignup" class="btn-secondary">Cadastrar</button>
+        </div>
+        <p id="auth-message"></p>
+    </div>
+
+    <div id="app-container" class="container hidden">
+        <header>
+            <h2>Olá, <span id="user-display">Visitante</span></h2>
+            <button id="btnLogout" class="btn-small">Sair</button>
+        </header>
+
+        <section class="booking-section">
+            <h3>Novo Agendamento</h3>
+            
+            <label>1. Escolha o Serviço:</label>
+            <select id="service-select">
+                <option value="Corte de Cabelo - R$ 50,00">Corte de Cabelo (30min)</option>
+                <option value="Barba - R$ 30,00">Barba (30min)</option>
+                <option value="Combo Corte + Barba - R$ 70,00">Combo Corte + Barba (1h)</option>
+                <option value="Sobrancelha - R$ 20,00">Sobrancelha (15min)</option>
+            </select>
+
+            <label>2. Escolha a Data:</label>
+            <input type="date" id="date-select">
+
+            <label>3. Horários Disponíveis:</label>
+            <div id="slots-container" class="slots-grid">
+                <p class="info-text">Selecione uma data para ver os horários.</p>
+            </div>
+        </section>
+
+        <hr>
+
+        <section class="my-appointments">
+            <h3>Meus Agendamentos</h3>
+            <ul id="appointments-list">
+                </ul>
+        </section>
+    </div>
+
+    <script type="module" src="app.js"></script>
 </body>
 </html>
