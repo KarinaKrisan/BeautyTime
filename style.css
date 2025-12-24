@@ -1,89 +1,137 @@
 :root {
-    --primary: #d63384; /* Cor estilo SalonSoft */
-    --bg: #f4f4f9;
-    --white: #ffffff;
-    --text: #333;
+    --primary: #d63384; /* Rosa escuro */
+    --primary-hover: #b02a6b;
+    --bg-color: #f0f2f5;
+    --card-bg: #ffffff;
+    --text-color: #333;
+    --border-color: #ddd;
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--bg);
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--bg-color);
     margin: 0;
     display: flex;
     justify-content: center;
+    align-items: flex-start;
     min-height: 100vh;
+    padding-top: 20px;
 }
 
 .container {
-    background: var(--white);
-    width: 100%;
-    max-width: 400px; /* Tamanho mobile */
-    padding: 20px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    border-radius: 8px;
-    margin: 20px 10px;
+    background: var(--card-bg);
+    width: 90%;
+    max-width: 400px;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-.hidden { display: none; }
+.hidden { display: none !important; }
 
-h1, h2, h3 { color: var(--text); }
+/* Cabeçalho */
+.header { text-align: center; margin-bottom: 20px; }
+.header h1 { margin: 0; color: var(--primary); }
+.header p { color: #666; margin: 5px 0 0; }
 
+/* Inputs e Botões */
 input, select {
     width: 100%;
     padding: 12px;
-    margin: 10px 0;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    margin: 8px 0;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
     box-sizing: border-box;
+    font-size: 16px;
 }
-
-.buttons { display: flex; gap: 10px; }
 
 button {
     width: 100%;
     padding: 12px;
     border: none;
-    border-radius: 5px;
+    border-radius: 6px;
     cursor: pointer;
-    font-weight: bold;
-    transition: 0.3s;
+    font-size: 16px;
+    font-weight: 500;
+    transition: 0.2s;
 }
 
-.btn-primary { background-color: var(--primary); color: white; }
-.btn-primary:hover { background-color: #b02a6b; }
+.buttons-row { display: flex; gap: 10px; margin-top: 10px; }
 
-.btn-secondary { background-color: #6c757d; color: white; }
-.btn-small { width: auto; padding: 5px 10px; background: #333; color: white; }
+.btn-primary { background-color: var(--primary); color: white; }
+.btn-primary:hover { background-color: var(--primary-hover); }
+
+.btn-outline { background-color: transparent; border: 1px solid var(--primary); color: var(--primary); }
+.btn-outline:hover { background-color: #fff0f5; }
+
+/* Botão Google */
+.btn-google {
+    background-color: white;
+    color: #555;
+    border: 1px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+.btn-google img { width: 18px; height: 18px; }
+.btn-google:hover { background-color: #f8f8f8; border-color: #bbb; }
+
+.divider {
+    text-align: center;
+    color: #999;
+    font-size: 12px;
+    margin: 15px 0;
+    position: relative;
+}
+
+/* Área do App */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+.btn-small { width: auto; padding: 5px 15px; font-size: 14px; background: #eee; color: #333; }
+
+.step { margin-bottom: 15px; }
+.step label { font-weight: bold; display: block; margin-bottom: 5px; color: #444; }
 
 /* Grid de Horários */
 .slots-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-top: 10px;
+    gap: 8px;
 }
 
 .slot {
     padding: 10px;
-    background: #e9ecef;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
     text-align: center;
-    border-radius: 5px;
     cursor: pointer;
-    border: 1px solid #ddd;
+    font-size: 14px;
 }
+.slot:hover { background-color: #e9ecef; }
+.slot.selected { background-color: var(--primary); color: white; border-color: var(--primary); }
+.slot.taken { background-color: #ffebee; color: #c62828; cursor: not-allowed; opacity: 0.7; }
 
-.slot:hover { background: #dee2e6; }
-.slot.selected { background: var(--primary); color: white; border-color: var(--primary); }
-.slot.taken { background: #ffcccc; color: #a00; cursor: not-allowed; opacity: 0.6; }
+.hint { grid-column: span 3; text-align: center; color: #888; font-size: 14px; }
 
 /* Lista de Agendamentos */
 ul { list-style: none; padding: 0; }
 li {
     background: #fff;
-    border-bottom: 1px solid #eee;
+    border: 1px solid #eee;
     padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 6px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-.btn-delete { background: red; color: white; padding: 5px; font-size: 12px; width: auto;}
+.btn-cancel { width: auto; background: none; color: #d63384; font-size: 12px; padding: 5px; }
