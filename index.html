@@ -3,62 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BeautyTime - Agendamento</title>
+    <title>Agendamento Online</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <div id="auth-container" class="container">
+    <div id="auth-container" class="container center-content">
         <div class="header">
-            <h1>BeautyTime</h1>
-            <p>Agende seu horário online</p>
+            <h1>Bem-vindo</h1>
+            <p>Para agendar, faça login com sua conta Google.</p>
         </div>
 
         <button id="btnGoogle" class="btn-google">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo">
-            Entrar com Google
+            Continuar com Google
         </button>
-
-        <div class="divider">ou entre com e-mail</div>
-        
-        <input type="email" id="email" placeholder="Seu e-mail">
-        <input type="password" id="password" placeholder="Sua senha">
-        
-        <div class="buttons-row">
-            <button id="btnLogin" class="btn-primary">Entrar</button>
-            <button id="btnSignup" class="btn-outline">Cadastrar</button>
-        </div>
     </div>
 
     <div id="app-container" class="container hidden">
         <header class="app-header">
-            <div>
-                <small>Bem-vindo(a),</small>
-                <h3 id="user-display">Usuário</h3>
+            <div class="user-info">
+                <img id="user-photo" src="" alt="Avatar">
+                <div>
+                    <small>Olá,</small>
+                    <h3 id="user-display">Usuário</h3>
+                </div>
             </div>
             <button id="btnLogout" class="btn-small">Sair</button>
         </header>
 
         <section class="step">
-            <label>1. O que vamos fazer hoje?</label>
+            <label>1. Selecione o Serviço:</label>
             <select id="service-select">
                 <option value="Corte de Cabelo">Corte de Cabelo (30min)</option>
                 <option value="Barba">Barba (30min)</option>
-                <option value="Completo (Cabelo + Barba)">Completo (1h)</option>
+                <option value="Completo">Cabelo + Barba (1h)</option>
                 <option value="Sobrancelha">Sobrancelha (15min)</option>
             </select>
         </section>
 
         <section class="step">
-            <label>2. Escolha a data:</label>
+            <label>2. Escolha a Data:</label>
             <input type="date" id="date-select">
         </section>
 
         <section class="step">
-            <label>3. Selecione um horário livre:</label>
+            <label>3. Horários Disponíveis:</label>
             <div id="slots-container" class="slots-grid">
-                <p class="hint">Selecione uma data acima para ver os horários.</p>
+                <p class="hint">Selecione uma data para ver a agenda.</p>
             </div>
         </section>
 
