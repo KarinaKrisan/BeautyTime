@@ -1,11 +1,9 @@
-// Importa as funções do Firebase (Core e Analytics)
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-analytics.js";
+// Importações do Firebase v9 (Direto do CDN para não precisar de instalações locais complexas)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, query, where, onSnapshot, deleteDoc, doc, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-// ADICIONADO: Importa as funções do Banco de Dados (Firestore)
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
-
-// Sua configuração do Firebase (BeautyTime)
+// --- 1. CONFIGURAÇÃO ---
 const firebaseConfig = {
     apiKey: "AIzaSyCvS2rnWz2qqyet_eqwTNQ6hSdlyxgoHjY",
     authDomain: "beautytime-1f1a9.firebaseapp.com",
@@ -16,79 +14,161 @@ const firebaseConfig = {
     measurementId: "G-2MMEH73BLL"
 };
 
-// Inicializa Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-
-// Inicializa o Banco de Dados
+const auth = getAuth(app);
 const db = getFirestore(app);
 
-// --- LÓGICA DA AGENDA ---
+// Variáveis Globais
+let currentUser = null;
+let selectedTime = null;
 
-// Referência aos elementos da tela
-const bookingForm = document.getElementById('bookingForm');
-const appointmentsList = document.getElementById('appointmentsList');
-const messageDiv = document.getElementById('message');
+// Elementos do DOM
+const authContainer = document.getElementById('auth-container');
+const appContainer = document.getElementById('app-container');
+const emailInput = document.getElementById('email');
+const passInput = document.getElementById('password');
+const dateInput = document.getElementById('date-select');
+const slotsContainer = document.getElementById('slots-container');
+const serviceSelect = document.getElementById('service-select');
+const appointmentsList = document.getElementById('appointments-list');
 
-// 1. Função para SALVAR agendamento
-if (bookingForm) {
-    bookingForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+// --- 2. AUTENTICAÇÃO ---
 
-        const name = document.getElementById('name').value;
-        const date = document.getElementById('date').value;
-        const time = document.getElementById('time').value;
+// Observador de Estado (Logado ou Não)
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        currentUser = user;
+        authContainer.classList.add('hidden');
+        appContainer.classList.remove('hidden');
+        document.getElementById('user-display').innerText = user.email;
+        carregarMeusAgendamentos();
+    } else {
+        currentUser = null;
+        authContainer.classList.remove('hidden');
+        appContainer.classList.add('hidden');
+    }
+});
 
-        // Limpa mensagem anterior
-        messageDiv.innerHTML = '<div class="alert alert-info">Processando...</div>';
+// Botão Cadastrar
+document.getElementById('btnSignup').addEventListener('click', () => {
+    createUserWithEmailAndPassword(auth, emailInput.value, passInput.value)
+        .then(() => alert("Conta criada!"))
+        .catch((error) => alert("Erro: " + error.message));
+});
 
-        try {
-            // Salva na coleção "agendamentos" do seu projeto BeautyTime
-            await addDoc(collection(db, "agendamentos"), {
-                cliente: name,
-                data: date,
-                horario: time,
-                criadoEm: new Date()
-            });
-            
-            messageDiv.innerHTML = '<div class="alert alert-success">Agendado com sucesso!</div>';
-            bookingForm.reset();
-            
-        } catch (error) {
-            console.error("Erro ao agendar: ", error);
-            messageDiv.innerHTML = `<div class="alert alert-danger">Erro: ${error.message}</div>`;
+// Botão Entrar
+document.getElementById('btnLogin').addEventListener('click', () => {
+    signInWithEmailAndPassword(auth, emailInput.value, passInput.value)
+        .catch((error) => alert("Erro ao entrar: " + error.message));
+});
+
+// Botão Sair
+document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
+
+
+// --- 3. LÓGICA DE AGENDAMENTO ---
+
+// Quando muda a data, carrega horários
+dateInput.addEventListener('change', carregarHorarios);
+
+async function carregarHorarios() {
+    const dataSelecionada = dateInput.value;
+    if (!dataSelecionada) return;
+
+    slotsContainer.innerHTML = '<p>Carregando...</p>';
+
+    // Horários possíveis (Exemplo: 9h às 18h)
+    const horariosBase = ["09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"];
+
+    // Buscar no Firebase quais já estão ocupados nesta data
+    const q = query(collection(db, "agendamentos"), where("data", "==", dataSelecionada));
+    const snapshot = await getDocs(q);
+    
+    const horariosOcupados = snapshot.docs.map(doc => doc.data().horario);
+
+    slotsContainer.innerHTML = ''; // Limpa
+
+    horariosBase.forEach(hora => {
+        const div = document.createElement('div');
+        div.className = 'slot';
+        div.innerText = hora;
+
+        if (horariosOcupados.includes(hora)) {
+            div.classList.add('taken');
+            div.title = "Indisponível";
+        } else {
+            div.onclick = () => selecionarHorario(div, hora);
         }
+        slotsContainer.appendChild(div);
     });
 }
 
-// 2. Função para LER agendamentos em tempo real
-if (appointmentsList) {
-    // Busca ordenado por data e depois horário
-    const q = query(collection(db, "agendamentos"), orderBy("data"), orderBy("horario"));
+function selecionarHorario(elemento, hora) {
+    // Remove seleção anterior
+    document.querySelectorAll('.slot.selected').forEach(el => el.classList.remove('selected'));
+    
+    // Adiciona nova seleção
+    elemento.classList.add('selected');
+    selectedTime = hora;
+    
+    // Pergunta se quer confirmar
+    if(confirm(`Confirmar agendamento para ${dateInput.value} às ${hora}?`)) {
+        salvarAgendamento();
+    }
+}
 
+async function salvarAgendamento() {
+    if (!currentUser || !selectedTime || !dateInput.value) return;
+
+    try {
+        await addDoc(collection(db, "agendamentos"), {
+            uid: currentUser.uid,
+            email: currentUser.email,
+            servico: serviceSelect.value,
+            data: dateInput.value,
+            horario: selectedTime,
+            criado_em: new Date()
+        });
+        alert("Agendamento Confirmado!");
+        selectedTime = null;
+        carregarHorarios(); // Recarrega para bloquear o horário
+    } catch (e) {
+        console.error("Erro", e);
+        alert("Erro ao salvar.");
+    }
+}
+
+// --- 4. LISTAGEM EM TEMPO REAL ---
+
+function carregarMeusAgendamentos() {
+    const q = query(collection(db, "agendamentos"), where("uid", "==", currentUser.uid));
+    
+    // onSnapshot atualiza a lista automaticamente se algo mudar no banco
     onSnapshot(q, (snapshot) => {
-        appointmentsList.innerHTML = ""; // Limpa a lista visual
-        
+        appointmentsList.innerHTML = '';
         if (snapshot.empty) {
-            appointmentsList.innerHTML = '<li class="list-group-item">Nenhum agendamento encontrado.</li>';
-            return;
+            appointmentsList.innerHTML = '<li>Nenhum agendamento encontrado.</li>';
         }
-
-        snapshot.forEach((doc) => {
-            const appointment = doc.data();
-            
-            // Cria o item da lista
+        
+        snapshot.forEach((docSnap) => {
+            const agendamento = docSnap.data();
             const li = document.createElement('li');
-            li.className = 'list-group-item d-flex justify-content-between align-items-center';
-            
-            // Formata a data para visualização (opcional)
-            // Exibe: 2023-12-25 - 14:00 (Cliente)
             li.innerHTML = `
                 <div>
-                    <strong>${appointment.data}</strong> às <strong>${appointment.horario}</strong>
+                    <strong>${agendamento.data} - ${agendamento.horario}</strong><br>
+                    <small>${agendamento.servico}</small>
                 </div>
-                <span class="badge bg-primary rounded-pill">${appointment.cliente}</span>
+                <button class="btn-delete" data-id="${docSnap.id}">X</button>
             `;
+            
+            // Botão de Excluir
+            li.querySelector('.btn-delete').onclick = async () => {
+                if(confirm("Cancelar este agendamento?")) {
+                    await deleteDoc(doc(db, "agendamentos", docSnap.id));
+                    carregarHorarios(); // Atualiza a grade se for no mesmo dia
+                }
+            };
+
             appointmentsList.appendChild(li);
         });
     });
